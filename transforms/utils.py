@@ -91,3 +91,5 @@ def center_crop(img:np.array,output_size:List[int])->np.array:
     crop_top = int(round((image_height - crop_height) / 2.))
     crop_left = int(round((image_width - crop_width) / 2.))
     return img[crop_top:crop_top+crop_height,crop_left:crop_left+crop_width]
+
+
