@@ -11,13 +11,12 @@ import itertools
 
 import numpy as np
 import torch
-from torch.serialization import load
-from .config import cfg
-import distributed as dist
+from core.config import cfg
+import core.distributed as dist
 
 def unwrap_model(model):
-    """Remove the DistrbutedDataParallel wrapper if present."""
-    wrapped=isinstance(model,torch.nn.parallel.DistributedDataParallel)
+    """Remove the DistributedDataParallel wrapper if present."""
+    wrapped = isinstance(model, torch.nn.parallel.distributed.DistributedDataParallel)
     return model.module if wrapped else model
 
 @torch.no_grad()

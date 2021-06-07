@@ -7,8 +7,8 @@
 
 """ResNe(X)t models."""
 
-from .config import cfg
-from .blocks import (
+from core.config import cfg
+from models.blocks import (
     activation, 
     conv2d, 
     conv2d_cx, 
@@ -31,7 +31,7 @@ _IN_STAGE_DS ={50:(3,4,6,3),101:(3,4,23,3),152:(3,8,36,3)}
 def get_trans_fun(name):
     """Retrieves the transformation function by name."""
     trans_funs={
-        "basic_transfom":BasicTransform,
+        "basic_transform": BasicTransform,
         "bottleneck_transform":BottleneckTransform,
     }
     err_str="Transformation function '{}' not supported"
@@ -39,16 +39,17 @@ def get_trans_fun(name):
     return trans_funs[name]
 
 class ResHead(Module):
-    """ResNet head: Avgrool,1x1."""
-    def __init__(self,w_in,num_classes):
-        super(ResHead,self).__init()
-        self.avg_pool=gap2d(w_in)
-        self.fc=linear(w_in,num_classes,bias=True)
-    
-    def forward(self,x):
-        x=self.avg_pool(x)
-        x=x.view(x.size(0),-1)
-        x=self.fc(x)
+    """ResNet head: AvgPool, 1x1."""
+
+    def __init__(self, w_in, num_classes):
+        super(ResHead, self).__init__()
+        self.avg_pool = gap2d(w_in)
+        self.fc = linear(w_in, num_classes, bias=True)
+
+    def forward(self, x):
+        x = self.avg_pool(x)
+        x = x.view(x.size(0), -1)
+        x = self.fc(x)
         return x
     
     @staticmethod
@@ -64,7 +65,7 @@ class BasicTransform(Module):
     """
 
     def __init__(self,w_in,w_out,stride,w_b=None,groups=1):
-        err_str="Basic transform does not support w_b and gropus options"
+        err_str = "Basic transform does not support w_b and groups options"
         assert w_b is None  and groups ==1,err_str
         super(BasicTransform, self).__init__()
         self.a=conv2d(w_in,w_out,3,stride=stride)
@@ -133,12 +134,12 @@ class ResBlock(Module):
         if(w_in!=w_out) or (stride!=1):
             self.proj=conv2d(w_in,w_out,1,stride=stride)
             self.bn=norm2d(w_out)
-        self.f=trans_fun(w_in,w_out,stride,w_b,groups=groups)
+        self.f = trans_fun(w_in, w_out, stride, w_b, groups)
         self.af=activation()
 
     def forward(self,x):
         x_p=self.bn(self.proj(x)) if self.proj else x
-        return self.af(x_p)+self.f(x)
+        return self.af(x_p + self.f(x))
     
     @staticmethod
     def complexity(cx, w_in, w_out, stride, trans_fun, w_b, groups):
@@ -151,8 +152,9 @@ class ResBlock(Module):
         return cx
 
 class ResStage(Module):
-    """Stage of ResNet"""
-    def __init__(self,w_in,w_out,stride,d,w_b=None,groups=1):
+    """Stage of ResNet."""
+
+    def __init__(self, w_in, w_out, stride, d, w_b=None, groups=1):
         super(ResStage, self).__init__()
         for i in range(d):
             b_stride=stride if i==0 else 1
@@ -177,8 +179,9 @@ class ResStage(Module):
 
 
 class ResStemIN(Module):
-    """ResNet stem for ImageNet:7x7,BN,AF,Maxpool."""
-    def __init__(self,w_in,w_out):
+    """ResNet stem for ImageNet: 7x7, BN, AF, MaxPool."""
+
+    def __init__(self, w_in, w_out):
         super(ResStemIN, self).__init__()
         self.conv=conv2d(w_in,w_out,7,stride=2)
         self.bn=norm2d(w_out)

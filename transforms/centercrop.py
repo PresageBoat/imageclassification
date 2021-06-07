@@ -1,7 +1,7 @@
 import numpy as np
 import numbers
 from typing import Sequence,List
-from utils import center_crop
+from transforms.utils import center_crop
 
 def _setup_size(size, error_msg):
     if isinstance(size, numbers.Number):

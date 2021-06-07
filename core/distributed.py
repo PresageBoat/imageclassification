@@ -17,7 +17,7 @@ import traceback
 import torch
 from torch.autograd import _tensor_or_tensors_to_tuple
 from torch.functional import _return_inverse
-from .config import cfg
+from core.config import cfg
 
 # Make work w recent PyTorch versions (https://github.com/pytorch/pytorch/issues/37377)
 os.environ['MKL_THREADING_LAYER']="GNU"
@@ -43,9 +43,10 @@ def init_process_group(proc_rank,world_size,port):
         rank=proc_rank,
     )
 
-def destory_process_group():
+def destroy_process_group():
     """Destroys the default process group."""
-    torch.distributed.destory_process_group()
+    torch.distributed.destroy_process_group()
+
 
 def scaled_all_reduce(tensors):
     """Performs the scaled all_reduce operation on the provided tensors.
@@ -76,10 +77,11 @@ def scaled_all_reduce(tensors):
 class ChildException(Exception):
     """Wraps an exception from a child process."""
 
-    def __init__(self,child_traceback):
-        super(ChildException,self).__init__(child_traceback)
+    def __init__(self, child_trace):
+        super(ChildException, self).__init__(child_trace)
 
-class ErrorHandle(object):
+
+class ErrorHandler(object):
     """Multiprocessing error handler (based on fairseq's).
 
     Listens for errors in child processes and propagates the tracebacks to the parent.
@@ -112,14 +114,14 @@ class ErrorHandle(object):
     def signal_handler(self,_sig_num,_stack_frame):
         """Signal handler"""
         # Kill children processes
-        for pad in self.children_pids:
-            os.kill(pad, signal.SIGINT)
+        for pid in self.children_pids:
+            os.kill(pid, signal.SIGINT)
         # Propagate the error from the child process
         raise ChildException(self.error_queue.get())
 
 
-def run(proc_rank,world_size,port,error_queue,fun,fun_args,fun_kwargs):
-    """RUns a function from a child process."""
+def run(proc_rank, world_size, port, error_queue, fun, fun_args, fun_kwargs):
+    """Runs a function from a child process."""
     try:
         #Initialize the process group
         init_process_group(proc_rank,world_size,port)
@@ -133,7 +135,7 @@ def run(proc_rank,world_size,port,error_queue,fun,fun_args,fun_kwargs):
         error_queue.put(traceback.format_exc())
     finally:
         # Destroy the process group
-        destory_process_group()
+        destroy_process_group()
 
 def multi_proc_run(num_proc,fun,fun_args=(),fun_kwargs=None):
     """Runs a function in a multi-proc setting (unless num_proc ==1)."""
@@ -144,16 +146,18 @@ def multi_proc_run(num_proc,fun,fun_args=(),fun_kwargs=None):
         return
     # Handle errors from training  subprocesses
     error_queue = multiprocessing.SimpleQueue()
-    error_handle=ErrorHandle(error_queue)
+    error_handler = ErrorHandler(error_queue)
     # Get a random port to use (without using global random number generator)
     port=random.Random().randint(cfg.PORT_RANGE[0],cfg.PORT_RANGE[1])
     # Run each training subprocess
     ps=[]
     for i in range(num_proc):
-        p_i=multiprocessing.Process(target=run,args=(i,num_proc,port,error_queue,fun,fun_args,fun_kwargs))
+        p_i = multiprocessing.Process(
+            target=run, args=(i, num_proc, port, error_queue, fun, fun_args, fun_kwargs)
+        )
         ps.append(p_i)
         p_i.start()
-        error_handle.add_handle(p_i.pid)
+        error_handler.add_child(p_i.pid)
     # Wait for each subprocess to finish
     for p in ps:
         p.join()

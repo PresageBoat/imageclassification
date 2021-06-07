@@ -7,13 +7,12 @@
 
 """Functions that handle saving and loading of checkpoints."""
 
-from copy import copy
 import os
 
-import models.distributed as dist
+import core.distributed as dist
 import torch
-from models.config import cfg,pathmgr
-from models.net import unwrap_model
+from core.config import cfg,pathmgr
+from core.net import unwrap_model
 
 # Common prefix for checkpoint file names
 _NAME_PREFIX = "model_epoch_"
@@ -32,8 +31,8 @@ def get_checkpoint(epoch):
 
 
 def get_checkpoint_best():
-    """Reteieves the path to the best checkpoint file."""
-    return os.path.join(cfg.OUT_DIR,"model.pyth")
+    """Retrieves the path to the best checkpoint file."""
+    return os.path.join(cfg.OUT_DIR, "model.pyth")
 
 def get_last_checkpoint():
     """Retrieves the most recent checkpoint(highest epoch number)."""
@@ -55,7 +54,7 @@ def save_checkpoint(model,model_ema,optimizer,epoch,test_err,ema_err):
     if not dist.is_master_proc():
         return
     # Ensure that the checkpoint dir exists
-    pathmgr.mkdir(get_checkpoint_dir())
+    pathmgr.mkdirs(get_checkpoint_dir())
     # Record the state
     checkpoint={
         "epoch":epoch,
@@ -64,7 +63,7 @@ def save_checkpoint(model,model_ema,optimizer,epoch,test_err,ema_err):
         "model_state":unwrap_model(model).state_dict(),
         "ema_state":unwrap_model(model_ema).state_dict(),
         "optimizer_state":optimizer.state_dict(),
-        "cfg":cfg.dump()
+        "cfg": cfg.dump(),
     }
     # Write the checkpoint 
     checkpoint_file=get_checkpoint(epoch+1)
@@ -127,7 +126,7 @@ def delete_checkpoints(checkpoint_dir=None,keep="all"):
     if keep=="all" or not pathmgr.exists(checkpoint_dir):
         return 0
     checkpoints=[f for f in pathmgr.ls(checkpoint_dir) if _NAME_PREFIX in f]
-    checkpoint=sorted(checkpoints)[:-1] if keep=="last" else checkpoints
+    checkpoints = sorted(checkpoints)[:-1] if keep == "last" else checkpoints
     for checkpoint in checkpoints:
         pathmgr.rm(os.path.join(checkpoint_dir,checkpoint))
     return len(checkpoints)

@@ -388,7 +388,8 @@ def dump_cfg():
 def load_cfg(cfg_file):
     """Loads config from specified file."""
     with pathmgr.open(cfg_file, "r") as f:
-        _C.merge_from_other_cfg(_C.load_cfg(f))
+        cfg_list=_C.load_cfg(f)
+        _C.merge_from_other_cfg(cfg_list)
 
 
 def reset_cfg():
@@ -401,11 +402,17 @@ def load_cfg_fom_args(description="Config file options."):
     parser = argparse.ArgumentParser(description=description)
     help_s = "Config file location"
     parser.add_argument("--cfg", dest="cfg_file", help=help_s, required=True, type=str)
-    help_s = "See pycls/core/config.py for all options"
+    help_s = "See core/config.py for all options"
     parser.add_argument("opts", help=help_s, default=None, nargs=argparse.REMAINDER)
     if len(sys.argv) == 1:
         parser.print_help()
         sys.exit(1)
     args = parser.parse_args()
     load_cfg(args.cfg_file)
+    """
+    cfg = get_cfg()： 获取已经配置好默认参数的cfg
+    cfg.merge_from_file(args.config_file)：config_file是指定的yaml配置文件，
+            通过merge_from_file这个函数会将yaml文件中指定的超参数对默认值进行覆盖。
+    cfg.merge_from_list(args.opts)：merge_from_list作用同上面的类似，只不过是通过命令行的方式覆盖。
+    """
     _C.merge_from_list(args.opts)

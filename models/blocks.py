@@ -12,7 +12,7 @@ import torch
 import torch.nn as nn
 
 from torch.nn import  Module
-from .config import cfg
+from core.config import cfg
 
 # ----------------------- Shortcuts for common torch.nn layers ----------------------- #
 
@@ -43,7 +43,7 @@ def activation():
     """Helper for building a activation layer."""
     activation_fun=cfg.MODEL.ACTIVATION_FUN.lower()
     if activation_fun=="relu":
-        return nn.Relu(inplace=cfg.MODEL.ACTIVATION_INPLACE)
+        return nn.ReLU(inplace=cfg.MODEL.ACTIVATION_INPLACE)
     elif activation_fun=="silu" or activation_fun=="swish":
         try:
             return torch.nn.SiLU()
@@ -58,7 +58,7 @@ def activation():
 def conv2d_cx(cx,w_in,w_out,k,*,stride=1,groups=1,bias=False):
     """Accumulates complexity of conv2d into cx=(h,w,flops,params,acts)."""
     assert k%2==1,"Only odd size kernels supported to avoid padding issues."
-    h,w,flops,params,acts=cx["h"],cx["w"],cx["flps"],cx["params"],cx["acts"]
+    h,w,flops,params,acts=cx["h"],cx["w"],cx["flops"],cx["params"],cx["acts"]
     h,w=(h-1)//stride +1,(w-1)//stride +1
     flops+=k*k*w_in*w_out*h*w//groups +(w_out if bias else 0)
     params+=k*k*w_in*w_out//groups+(w_out if bias else 0)
@@ -110,15 +110,15 @@ class SiLU(Module):
 
 
 class SE(Module):
-    """Squeeze-and-Excitation (SE) block: AvgPool,Fc,Act,FC,Sigmoid."""
+    """Squeeze-and-Excitation (SE) block: AvgPool, FC, Act, FC, Sigmoid."""
 
     def __init__(self,w_in,w_se):
         super(SE, self).__init__()
         self.avg_pool=gap2d(w_in)
         self.f_ex=nn.Sequential(
-            conv2d(w_in,w_se,1,bisa=True),
+            conv2d(w_in, w_se, 1, bias=True),
             activation(),
-            conv2d(w_se,w_in,1,biases=True),
+            conv2d(w_se, w_in, 1, bias=True),
             nn.Sigmoid(),
         )
     
@@ -163,11 +163,11 @@ def init_weights(m):
         m.bias.data.zero_()
     elif isinstance(m,nn.Linear):
         m.weight.data.normal_(mean=0.0,std=0.01)
-        m.bia.data.zero_()
+        m.bias.data.zero_()
 
 
 #???
-def drop_conncet(x,drop_ratio):
+def drop_connect(x, drop_ratio):
     """Drop connect (adapted from DARTS)."""
     keep_ratio=1.0-drop_ratio
     mask=torch.empty([x.shape[0],1,1,1],dtype=x.dtype,device=x.device)
