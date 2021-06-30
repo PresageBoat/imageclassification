@@ -19,12 +19,6 @@ from torch.utils.data.sampler import RandomSampler
 # Supported datasets
 _DATASETS = {"imagenet": ImageNet}
 
-# Default data directory (/path/pycls/pycls/datasets/data)
-_DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
-
-# Relative data paths to default data directory
-_PATHS = {"imagenet": "imagenet"}
-
 
 def _construct_loader(dataset,split, batch_size, shuffle, drop_last):
     """Constructs the data loader for the given dataset."""
