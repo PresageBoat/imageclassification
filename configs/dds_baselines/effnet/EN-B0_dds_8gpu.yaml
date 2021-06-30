@@ -17,12 +17,12 @@ OPTIM:
   MOMENTUM: 0.9
   WEIGHT_DECAY: 1e-5
 TRAIN:
-  DATASET: imagenet
+  DATASET: ./data/cifar10/train.txt
   IM_SIZE: 224
   BATCH_SIZE: 256
 TEST:
-  DATASET: imagenet
+  DATASET: ./data/cifar10/test.txt
   IM_SIZE: 256
   BATCH_SIZE: 200
-NUM_GPUS: 8
+GPU_DEVICE_IDS: [0,1,2,3,4,5,6,7]
 OUT_DIR: .

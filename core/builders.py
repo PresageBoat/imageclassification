@@ -10,9 +10,10 @@
 from core.config import cfg 
 from core.net import SoftCrossEntropyLoss
 from models.resnet import ResNet
+from models.anynet import AnyNet
 
 # Supported models:
-_models={"anynet":ResNet,"resnet":ResNet}
+_models={"anynet":AnyNet,"resnet":ResNet}
 
 # Supported loss functions   
 _loss_funs={"cross_entropy": SoftCrossEntropyLoss}
