@@ -29,7 +29,7 @@ def is_master_proc():
     the multi GPU setting, we assign the master role to the rank 0 process. When
     training using a single GPU, there is a single process which is considered master.
     """
-    return cfg.NUM_GPUS==1 or torch.distributed.get_rank()==0
+    return len(cfg.GPU_DEVICE_IDS)==1 or torch.distributed.get_rank()==0
 
 def init_process_group(proc_rank,world_size,port):
     """Initializes the default process group."""
@@ -53,10 +53,10 @@ def scaled_all_reduce(tensors):
 
     The input tensors are modified in-place. Currently supports only the sum
     reduction operator. The reduced values are scaled by the inverse size of the
-    process group (equivalent to cfg.NUM_GPUS).
+    process group (equivalent to len(cfg.GPU_DEVICE_IDS)).
     """
     # There is no need for reduction in the single-proc case
-    if cfg.NUM_GPUS==1:
+    if len(cfg.GPU_DEVICE_IDS)==1:
         return tensors
     # Queue  the reductions
     reductions=[]
@@ -69,7 +69,7 @@ def scaled_all_reduce(tensors):
     
     # Scale the results
     for tensor in tensors:
-        tensor.mul_(1.0/cfg.NUM_GPUS)
+        tensor.mul_(1.0/len(cfg.GPU_DEVICE_IDS))
     return tensors
 
 

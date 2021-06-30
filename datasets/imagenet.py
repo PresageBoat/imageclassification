@@ -38,32 +38,42 @@ _EIG_VECS = [
 class ImageNet(torch.utils.data.Dataset):
     """ImageNet dataset."""
 
-    def __init__(self, data_path, split):
+    def __init__(self, data_path,split):
         assert os.path.exists(data_path), "Data path '{}' not found".format(data_path)
-        splits = ["train", "val"]
-        assert split in splits, "Split '{}' not supported for ImageNet".format(split)
-        logger.info("Constructing ImageNet {}...".format(split))
-        self._data_path, self._split = data_path, split
+        logger.info("Constructing ImageNet {}...".format("train"))
+        self._data_path = data_path
+        self._split = split
         self._construct_imdb()
 
     def _construct_imdb(self):
         """Constructs the imdb."""
-        # Compile the split data path
-        split_path = os.path.join(self._data_path, self._split)
-        logger.info("{} data path: {}".format(self._split, split_path))
-        # Images are stored per class in subdirs (format: n<number>)
-        split_files = os.listdir(split_path)
-        self._class_ids = sorted(f for f in split_files)
-        # Map ImageNet class ids to contiguous ids
-        self._class_id_cont_id = {v: i for i, v in enumerate(self._class_ids)}
-        # Construct the image db
         self._imdb = []
-        for class_id in self._class_ids:
-            cont_id = self._class_id_cont_id[class_id]
-            im_dir = os.path.join(split_path, class_id)
-            for im_name in os.listdir(im_dir):
-                im_path = os.path.join(im_dir, im_name)
-                self._imdb.append({"im_path": im_path, "class": cont_id})
+
+        #data_path is dir
+        if os.path.isdir(self._data_path):
+            # Compile  data path
+            split_path=os.path.join(self._data_path)
+            logger.info("data path: {}".format( split_path))
+            split_files = os.listdir(split_path)
+            self._class_ids = sorted(f for f in split_files)
+            # Map ImageNet class ids to contiguous ids
+            self._class_id_cont_id = {v: i for i, v in enumerate(self._class_ids)}
+            # Construct the image db
+            for class_id in self._class_ids:
+                cont_id = self._class_id_cont_id[class_id]
+                im_dir = os.path.join(split_path, class_id)
+                for im_name in os.listdir(im_dir):
+                    im_path = os.path.join(im_dir, im_name)
+                    self._imdb.append({"im_path": im_path, "class": cont_id})
+        elif os.path.isfile(self._data_path):
+            with open(self._data_path,"r") as f:
+                class_ids =[]
+                for line in f.readlines():
+                    lines=line.split()
+                    class_ids.append(lines[1])
+                    self._imdb.append({"im_path": lines[0], "class": int(lines[1])})
+            self._class_ids=list(set(class_ids))
+
         logger.info("Number of images: {}".format(len(self._imdb)))
         logger.info("Number of classes: {}".format(len(self._class_ids)))
 
@@ -90,7 +100,8 @@ class ImageNet(torch.utils.data.Dataset):
 
     def __getitem__(self, index):
         # Load the image
-        im = cv2.imread(self._imdb[index]["im_path"])
+        im = cv2.imread(self._imdb[index]["im_path"],cv2.IMREAD_COLOR)
+
         # Prepare the image for training / testing
         im = self._prepare_im(im)
         # Retrieve the label

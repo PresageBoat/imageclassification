@@ -22,7 +22,7 @@ def unwrap_model(model):
 @torch.no_grad()
 def compute_precise_bn_stats(model,loader):
     """Computes precise BN stats on training data."""
-    num_iter=int(cfg.BN.NUM_SAMPLES_PRECISE/loader.batch_size/cfg.NUM_GPUS)
+    num_iter=int(cfg.BN.NUM_SAMPLES_PRECISE/loader.batch_size/len(cfg.GPU_DEVICE_IDS))
     num_iter=min(num_iter,len(loader))
     # Retrieve the BN layers
     bns=[m for m in model.modules() if isinstance(m,torch.nn.BatchNorm2d)]

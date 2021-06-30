@@ -26,16 +26,12 @@ _DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 _PATHS = {"imagenet": "imagenet"}
 
 
-def _construct_loader(dataset_name, split, batch_size, shuffle, drop_last):
+def _construct_loader(dataset,split, batch_size, shuffle, drop_last):
     """Constructs the data loader for the given dataset."""
-    err_str = "Dataset '{}' not supported".format(dataset_name)
-    assert dataset_name in _DATASETS and dataset_name in _PATHS, err_str
-    # Retrieve the data path for the dataset
-    data_path = os.path.join(_DATA_DIR, _PATHS[dataset_name])
     # Construct the dataset
-    dataset = _DATASETS[dataset_name](data_path, split)
+    dataset = _DATASETS["imagenet"](dataset,split)
     # Create a sampler for multi-process training
-    sampler = DistributedSampler(dataset) if cfg.NUM_GPUS > 1 else None
+    sampler = DistributedSampler(dataset) if len(cfg.GPU_DEVICE_IDS) > 1 else None
     # Create a loader
     loader = torch.utils.data.DataLoader(
         dataset,
@@ -52,9 +48,9 @@ def _construct_loader(dataset_name, split, batch_size, shuffle, drop_last):
 def construct_train_loader():
     """Train loader wrapper."""
     return _construct_loader(
-        dataset_name=cfg.TRAIN.DATASET,
+        dataset=cfg.TRAIN.DATASET,
         split=cfg.TRAIN.SPLIT,
-        batch_size=int(cfg.TRAIN.BATCH_SIZE / cfg.NUM_GPUS),
+        batch_size=int(cfg.TRAIN.BATCH_SIZE / len(cfg.GPU_DEVICE_IDS)),
         shuffle=True,
         drop_last=True,
     )
@@ -63,9 +59,9 @@ def construct_train_loader():
 def construct_test_loader():
     """Test loader wrapper."""
     return _construct_loader(
-        dataset_name=cfg.TEST.DATASET,
+        dataset=cfg.TEST.DATASET,
         split=cfg.TEST.SPLIT,
-        batch_size=int(cfg.TEST.BATCH_SIZE / cfg.NUM_GPUS),
+        batch_size=int(cfg.TEST.BATCH_SIZE / len(cfg.GPU_DEVICE_IDS)),
         shuffle=False,
         drop_last=False,
     )

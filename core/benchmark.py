@@ -25,7 +25,7 @@ def compute_time_eval(model):
     # Use eval mode
     model.eval()
     # Generate a dummy mini-batch and copy data to GPU
-    im_size, batch_size = cfg.TRAIN.IM_SIZE, int(cfg.TEST.BATCH_SIZE / cfg.NUM_GPUS)
+    im_size, batch_size = cfg.TRAIN.IM_SIZE, int(cfg.TEST.BATCH_SIZE / len(cfg.GPU_DEVICE_IDS))
     inputs = torch.zeros(batch_size, 3, im_size, im_size).cuda(non_blocking=False)
     # Compute precise forward pass time
     timer = Timer()
@@ -47,7 +47,7 @@ def compute_time_train(model, loss_fun):
     # Use train mode
     model.train()
     # Generate a dummy mini-batch and copy data to GPU
-    im_size, batch_size = cfg.TRAIN.IM_SIZE, int(cfg.TRAIN.BATCH_SIZE / cfg.NUM_GPUS)
+    im_size, batch_size = cfg.TRAIN.IM_SIZE, int(cfg.TRAIN.BATCH_SIZE / len(cfg.GPU_DEVICE_IDS))
     inputs = torch.rand(batch_size, 3, im_size, im_size).cuda(non_blocking=False)
     labels = torch.zeros(batch_size, dtype=torch.int64).cuda(non_blocking=False)
     labels_one_hot = net.smooth_one_hot_labels(labels)

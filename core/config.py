@@ -33,7 +33,7 @@ _C.MODEL.DEPTH = 0
 # Number of classes
 _C.MODEL.NUM_CLASSES = 10
 
-# Loss function (see pycls/models/loss.py for options)
+# Loss function (see ./models/loss.py for options)
 _C.MODEL.LOSS_FUN = "cross_entropy"
 
 # Activation function (relu or silu/swish)
@@ -50,7 +50,7 @@ _C.MODEL.SCALING_FACTOR = 1.0
 # ---------------------------------- ResNet options ---------------------------------- #
 _C.RESNET = CfgNode()
 
-# Transformation function (see pycls/models/resnet.py for options)
+# Transformation function (see ./models/resnet.py for options)
 _C.RESNET.TRANS_FUN = "basic_transform"
 
 # Number of groups to use (1 -> ResNet; > 1 -> ResNeXt)
@@ -244,6 +244,7 @@ _C.OPTIM.EMA_UPDATE_PERIOD = 32
 _C.TRAIN = CfgNode()
 
 # Dataset and split
+#train data as 1) directory: path/images/, 2) file: path/images.txt#
 _C.TRAIN.DATASET = ""
 _C.TRAIN.SPLIT = "train"
 
@@ -279,8 +280,9 @@ _C.TRAIN.AUGMENT = ""
 _C.TEST = CfgNode()
 
 # Dataset and split
+#test data as 1) directory: path/images/, 2) file: path/images.txt#
 _C.TEST.DATASET = ""
-_C.TEST.SPLIT = "val"
+_C.TEST.SPLIT = "test"
 
 # Total mini-batch size
 _C.TEST.BATCH_SIZE = 200
@@ -326,8 +328,8 @@ _C.DESC = ""
 # If True output additional info to log
 _C.VERBOSE = True
 
-# Number of GPUs to use (applies to both training and testing)
-_C.NUM_GPUS = 1
+# GPU device ,i.e. 0 or 0,1,2,3 or -1 (applies to both training )
+_C.GPU_DEVICE_IDS = []
 
 # Output directory
 _C.OUT_DIR = "/tmp"
@@ -365,13 +367,11 @@ def assert_and_infer_cfg(cache_urls=True):
     """Checks config values invariants."""
     err_str = "The first lr step must start at 0"
     assert not _C.OPTIM.STEPS or _C.OPTIM.STEPS[0] == 0, err_str
-    data_splits = ["train", "val", "test"]
-    err_str = "Data split '{}' not supported"
-    assert _C.TRAIN.SPLIT in data_splits, err_str.format(_C.TRAIN.SPLIT)
-    assert _C.TEST.SPLIT in data_splits, err_str.format(_C.TEST.SPLIT)
+    err_str='Device id should not empty'
+    assert  len(_C.GPU_DEVICE_IDS) ,err_str
     err_str = "Mini-batch size should be a multiple of NUM_GPUS."
-    assert _C.TRAIN.BATCH_SIZE % _C.NUM_GPUS == 0, err_str
-    assert _C.TEST.BATCH_SIZE % _C.NUM_GPUS == 0, err_str
+    assert _C.TRAIN.BATCH_SIZE % len(_C.GPU_DEVICE_IDS) == 0, err_str
+    assert _C.TEST.BATCH_SIZE % len(_C.GPU_DEVICE_IDS) == 0, err_str
     err_str = "Log destination '{}' not supported"
     assert _C.LOG_DEST in ["stdout", "file"], err_str.format(_C.LOG_DEST)
 

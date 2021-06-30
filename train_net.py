@@ -25,6 +25,7 @@ import torch
 import torch.cuda.amp as amp
 from core.config import cfg
 from core.config import pathmgr
+from core.utils import select_device
 
 
 logger = logging.get_logger(__name__)
@@ -53,6 +54,7 @@ def setup_env():
     torch.backends.cudnn.benchmark = cfg.CUDNN.BENCHMARK
 
 
+
 def setup_model():
     """Sets up a model for training or testing and log the results."""
     # Build the model
@@ -62,11 +64,12 @@ def setup_model():
     logger.info(logging.dump_log_data(net.complexity(model), "complexity"))
     # Transfer the model to the current GPU device
     err_str = "Cannot use more GPU devices than available"
-    assert cfg.NUM_GPUS <= torch.cuda.device_count(), err_str
-    cur_device = torch.cuda.current_device()
+    assert len(cfg.GPU_DEVICE_IDS) <= torch.cuda.device_count(), err_str
+    # cur_device = torch.cuda.current_device()
+    cur_device = select_device(cfg.GPU_DEVICE_IDS)
     model = model.cuda(device=cur_device)
     # Use multi-process data parallel model in the multi-gpu setting
-    if cfg.NUM_GPUS > 1:
+    if len(cfg.GPU_DEVICE_IDS) > 1:
         # Make model replica operate on the current device
         ddp = torch.nn.parallel.DistributedDataParallel
         model = ddp(module=model, device_ids=[cur_device], output_device=cur_device)
@@ -111,7 +114,7 @@ def train_epoch(loader, model, ema, loss_fun, optimizer, scaler, meter, cur_epoc
         loss, top1_err, top5_err = loss.item(), top1_err.item(), top5_err.item()
         meter.iter_toc()
         # Update and log stats
-        mb_size = inputs.size(0) * cfg.NUM_GPUS
+        mb_size = inputs.size(0) * len(cfg.GPU_DEVICE_IDS)
         meter.update_stats(top1_err, top5_err, loss, lr, mb_size)
         meter.log_iter_stats(cur_epoch, cur_iter)
         meter.iter_tic()
@@ -139,7 +142,9 @@ def test_epoch(loader, model, meter, cur_epoch):
         top1_err, top5_err = top1_err.item(), top5_err.item()
         meter.iter_toc()
         # Update and log stats
-        meter.update_stats(top1_err, top5_err, inputs.size(0) * cfg.NUM_GPUS)
+        
+        meter.update_stats(top1_err, top5_err, inputs.size(0) * len(cfg.GPU_DEVICE_IDS))
+        # meter.update_stats(top1_err, top5_err, inputs.size(0) * cfg.NUM_GPUS)
         meter.log_iter_stats(cur_epoch, cur_iter)
         meter.iter_tic()
     # Log epoch stats
@@ -242,4 +247,5 @@ if __name__ == "__main__":
     config.load_cfg_fom_args("Train a classification model.")
     config.assert_and_infer_cfg()
     cfg.freeze()
-    dist.multi_proc_run(num_proc=cfg.NUM_GPUS, fun=train_model)
+    # dist.multi_proc_run(num_proc=cfg.NUM_GPUS, fun=train_model)    
+    dist.multi_proc_run(num_proc=len(cfg.GPU_DEVICE_IDS), fun=train_model)
