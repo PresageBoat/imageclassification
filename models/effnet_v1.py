@@ -144,7 +144,7 @@ class StemIN(Module):
         return cx
 
 
-class EffNet(Module):
+class EffNet_V1(Module):
     """EfficientNet model."""
 
     @staticmethod
@@ -162,8 +162,8 @@ class EffNet(Module):
         }
 
     def __init__(self, params=None):
-        super(EffNet, self).__init__()
-        p = EffNet.get_params() if not params else params
+        super(EffNet_V1, self).__init__()
+        p = EffNet_V1.get_params() if not params else params
         vs = ["sw", "ds", "ws", "exp_rs", "se_r", "ss", "ks", "hw", "nc"]
         sw, ds, ws, exp_rs, se_r, ss, ks, hw, nc = [p[v] for v in vs]
         stage_params = list(zip(ds, ws, exp_rs, ss, ks))
@@ -184,7 +184,7 @@ class EffNet(Module):
     @staticmethod
     def complexity(cx, params=None):
         """Computes model complexity (if you alter the model, make sure to update)."""
-        p = EffNet.get_params() if not params else params
+        p = EffNet_V1.get_params() if not params else params
         vs = ["sw", "ds", "ws", "exp_rs", "se_r", "ss", "ks", "hw", "nc"]
         sw, ds, ws, exp_rs, se_r, ss, ks, hw, nc = [p[v] for v in vs]
         stage_params = list(zip(ds, ws, exp_rs, ss, ks))

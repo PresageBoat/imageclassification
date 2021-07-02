@@ -1,5 +1,5 @@
 MODEL:
-  TYPE: effnet
+  TYPE: effnet_v1
   NUM_CLASSES: 1000
   ACTIVATION_FUN: silu
 EN:

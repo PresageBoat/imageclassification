@@ -174,6 +174,29 @@ _C.EN.DC_RATIO = 0.0
 # Dropout ratio
 _C.EN.DROPOUT_RATIO = 0.0
 
+# ---------------------------------- Mobilenetv3 small options ---------------------------------- #
+_C.MBS = CfgNode()
+
+# Squeeze-and-Excitation (SE) ratio
+_C.MBS.SE_R = 0.25
+
+# Head width
+_C.MBS.HEAD_W = 1024
+
+# Dropout ratio
+_C.MBS.DROPOUT_RATIO = 0.2
+
+# ---------------------------------- Mobilenetv3 large options ---------------------------------- #
+_C.MBL = CfgNode()
+
+# Squeeze-and-Excitation (SE) ratio
+_C.MBL.SE_R = 0.25
+
+# Head width
+_C.MBL.HEAD_W = 1024
+
+# Dropout ratio
+_C.MBL.DROPOUT_RATIO = 0.2
 
 # -------------------------------- Batch norm options -------------------------------- #
 _C.BN = CfgNode()
@@ -298,7 +321,9 @@ _C.TEST.WEIGHTS = ""
 _C.DATA_LOADER = CfgNode()
 
 # Number of data loader workers per process
-_C.DATA_LOADER.NUM_WORKERS = 8
+#windows bug num_workers ==0 ;linux can set by cpu 
+_C.DATA_LOADER.NUM_WORKERS = 0  
+# _C.DATA_LOADER.NUM_WORKERS = 8
 
 # Load data to pinned host memory
 _C.DATA_LOADER.PIN_MEMORY = True

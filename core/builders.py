@@ -11,9 +11,15 @@ from core.config import cfg
 from core.net import SoftCrossEntropyLoss
 from models.resnet import ResNet
 from models.anynet import AnyNet
+from models.effnet_v1 import EffNet_V1
+from models.regnet import RegNet
+from models.mobilenetv3_small import MobileNetV3_S
+from models.mobilenetv3_large import MobileNetV3_L
+
 
 # Supported models:
-_models={"anynet":AnyNet,"resnet":ResNet}
+_models = {"anynet": AnyNet, "effnet_v1": EffNet_V1, "resnet": ResNet, "regnet": RegNet,
+            "mobilenetv3_small":MobileNetV3_S,"mobilenetv3_large":MobileNetV3_L,}
 
 # Supported loss functions   
 _loss_funs={"cross_entropy": SoftCrossEntropyLoss}
