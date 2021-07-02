@@ -198,6 +198,27 @@ _C.MBL.HEAD_W = 1024
 # Dropout ratio
 _C.MBL.DROPOUT_RATIO = 0.2
 
+
+# ------------------------------- ShuffleNet v2 options ------------------------------- #
+_C.SN = CfgNode()
+
+# Stem width
+_C.SN.STEM_W = 24
+
+# Depth for each stage (number of blocks in the stage,list of 3 positive ints)
+_C.SN.DEPTHS = []
+
+# Width for each stage (width of each block in the stage,list of 3 positive ints)
+_C.SN.WIDTHS = []
+
+# Strides for each stage (applies to the first block of each stage,list of 3 positive ints)
+_C.SN.STRIDES = []
+
+
+# Head width
+_C.SN.HEAD_W = 1024
+
+
 # -------------------------------- Batch norm options -------------------------------- #
 _C.BN = CfgNode()
 
