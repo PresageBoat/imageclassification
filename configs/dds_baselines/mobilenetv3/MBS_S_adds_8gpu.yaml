@@ -2,7 +2,7 @@ MODEL:
   TYPE: mobilenetv3_small
   NUM_CLASSES: 10
   ACTIVATION_FUN: silu
-MBS:
+MB:
   HEAD_W: 1024
 
 OPTIM:

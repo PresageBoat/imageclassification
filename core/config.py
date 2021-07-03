@@ -210,30 +210,17 @@ _C.ENV2.DC_RATIO = 0.0
 # Dropout ratio
 _C.ENV2.DROPOUT_RATIO = 0.0
 
-# ---------------------------------- Mobilenetv3 small options ---------------------------------- #
-_C.MBS = CfgNode()
+# ---------------------------------- Mobilenetv3  options ---------------------------------- #
+_C.MB = CfgNode()
 
 # Squeeze-and-Excitation (SE) ratio
-_C.MBS.SE_R = 0.25
+_C.MB.SE_R = 0.25
 
 # Head width
-_C.MBS.HEAD_W = 1024
+_C.MB.HEAD_W = 1024
 
 # Dropout ratio
-_C.MBS.DROPOUT_RATIO = 0.2
-
-# ---------------------------------- Mobilenetv3 large options ---------------------------------- #
-_C.MBL = CfgNode()
-
-# Squeeze-and-Excitation (SE) ratio
-_C.MBL.SE_R = 0.25
-
-# Head width
-_C.MBL.HEAD_W = 1024
-
-# Dropout ratio
-_C.MBL.DROPOUT_RATIO = 0.2
-
+_C.MB.DROPOUT_RATIO = 0.2
 
 # ------------------------------- ShuffleNet v2 options ------------------------------- #
 _C.SN = CfgNode()

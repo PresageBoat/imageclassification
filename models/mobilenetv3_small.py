@@ -133,6 +133,29 @@ class MBSStemIN(Module):
         cx = norm2d_cx(cx, w_out)
         return cx
 
+class MBSStage(Module):
+    """EfficientNet stage."""
+
+    def __init__(self, w_in, exp_r, k, stride, se_r, w_out, d):
+        super().__init__()
+        for i in range(d):
+            block = MBConv(w_in, exp_r, k, stride, se_r, w_out)
+            self.add_module("b{}".format(i + 1), block)
+            stride, w_in = 1, w_out
+
+    def forward(self, x):
+        for block in self.children():
+            x = block(x)
+        return x
+
+    @staticmethod
+    def complexity(cx, w_in, exp_r, k, stride, se_r, w_out, d):
+        for _ in range(d):
+            cx = MBConv.complexity(cx, w_in, exp_r, k, stride, se_r, w_out)
+            stride, w_in = 1, w_out
+        return cx
+
+
 
 class MobileNetV3_S(Module):
     """mobilenetv3 small model."""
