@@ -174,6 +174,42 @@ _C.EN.DC_RATIO = 0.0
 # Dropout ratio
 _C.EN.DROPOUT_RATIO = 0.0
 
+# ------------------------------- EfficientNet V2 options ------------------------------- #
+_C.ENV2 = CfgNode()
+
+# Stem width
+_C.ENV2.STEM_W = 32
+
+# Depth for each stage (number of blocks in the stage)
+_C.ENV2.DEPTHS = []
+
+# basic each stage (number of blocks in the stage)
+_C.ENV2.BLOCK_TYPE = []
+
+# Width for each stage (width of each block in the stage)
+_C.ENV2.WIDTHS = []
+
+# Expansion ratios for MBConv or FusedMBConv blocks in each stage
+_C.ENV2.EXP_RATIOS = []
+
+# Squeeze-and-Excitation (SE) ratio
+_C.ENV2.SE_R = []
+
+# Strides for each stage (applies to the first block of each stage)
+_C.ENV2.STRIDES = []
+
+# Kernel sizes for each stage
+_C.ENV2.KERNELS = []
+
+# Head width
+_C.ENV2.HEAD_W = 1280
+
+# Drop connect ratio
+_C.ENV2.DC_RATIO = 0.0
+
+# Dropout ratio
+_C.ENV2.DROPOUT_RATIO = 0.0
+
 # ---------------------------------- Mobilenetv3 small options ---------------------------------- #
 _C.MBS = CfgNode()
 

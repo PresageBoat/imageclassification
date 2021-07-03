@@ -1,13 +1,17 @@
+# about base * (width1.4, depth1.8)
 MODEL:
-  TYPE: shufflenetv2
+  TYPE: effnet_v2
   NUM_CLASSES: 10
-  ACTIVATION_FUN: relu
+  ACTIVATION_FUN: silu
 EN:
   STEM_W: 24
-  STRIDES: [2,2,2]
-  DEPTHS: [4,8,4]
-  WIDTHS: [244,488,976]
-  HEAD_W: 2048
+  STRIDES: [1, 2, 2, 2, 1, 2, 1]
+  DEPTHS: [3, 5, 5, 7, 14, 18, 5]
+  WIDTHS: [24, 48, 80, 160, 176, 304, 512]
+  EXP_RATIOS: [1, 4, 4, 4, 6, 6, 6]
+  KERNELS: [3, 3, 3, 3, 3, 3,3]
+  SE_R: [0, 0, 0, 0.25, 0.25, 0.25, 0.25]
+  HEAD_W: 1792
 OPTIM:
   LR_POLICY: cos
   BASE_LR: 0.4

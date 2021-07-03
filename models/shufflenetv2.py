@@ -160,8 +160,9 @@ class ShuffleStage(Module):
     def __init__(self, w_in, w_out, stride, d):
         super().__init__()
         for i in range(d):
-            block = InvertedResidual(w_in, w_out,  stride)
+            block = InvertedResidual(w_in, w_out, stride)
             self.add_module("b{}".format(i + 1), block)
+            stride,w_in=1,w_out
 
     def forward(self, x):
         for block in self.children():
@@ -172,6 +173,8 @@ class ShuffleStage(Module):
     def complexity(cx, w_in, w_out, stride, d):
         for _ in range(d):
             cx = InvertedResidual.complexity(cx, w_in, w_out, stride)
+            stride,w_in=1,w_out
+
         return cx
 
 
