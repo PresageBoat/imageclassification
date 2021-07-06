@@ -263,8 +263,22 @@ _C.BN.USE_CUSTOM_WEIGHT_DECAY = False
 _C.BN.CUSTOM_WEIGHT_DECAY = 0.0
 
 
+# -------------------------------- Layer norm options -------------------------------- #
+_C.LN = CfgNode()
+
+# LN epsilon
+_C.LN.EPS = 1e-5
+
+# Use a different weight decay for LN layers
+_C.LN.USE_CUSTOM_WEIGHT_DECAY = False
+_C.LN.CUSTOM_WEIGHT_DECAY = 0.0
+
+
 # -------------------------------- Optimizer options --------------------------------- #
 _C.OPTIM = CfgNode()
+
+# Type of optimizer select from {'sgd', 'adam', 'adamw'}
+_C.OPTIM.OPTIMIZER = "sgd"
 
 # Learning rate ranges from BASE_LR to MIN_LR*BASE_LR according to the LR_POLICY
 _C.OPTIM.BASE_LR = 0.1
@@ -291,8 +305,16 @@ _C.OPTIM.DAMPENING = 0.0
 # Nesterov momentum
 _C.OPTIM.NESTEROV = True
 
+# Betas (for Adam/AdamW optimizer)
+_C.OPTIM.BETA1 = 0.9
+_C.OPTIM.BETA2 = 0.999
+
 # L2 regularization
 _C.OPTIM.WEIGHT_DECAY = 5e-4
+
+# Use a different weight decay for all biases (excluding those in BN/LN layers)
+_C.OPTIM.BIAS_USE_CUSTOM_WEIGHT_DECAY = False
+_C.OPTIM.BIAS_CUSTOM_WEIGHT_DECAY = 0.0
 
 # Start the warm up from OPTIM.BASE_LR * OPTIM.WARMUP_FACTOR
 _C.OPTIM.WARMUP_FACTOR = 0.1
@@ -335,6 +357,9 @@ _C.TRAIN.LABEL_SMOOTHING = 0.0
 
 # Batch mixup regularization value in 0 to 1 (0 gives no mixup)
 _C.TRAIN.MIXUP_ALPHA = 0.0
+
+# Batch cutmix regularization value in 0 to 1 (0 gives no cutmix)
+_C.TRAIN.CUTMIX_ALPHA = 0.0
 
 # Standard deviation for AlexNet-style PCA jitter (0 gives no PCA jitter)
 _C.TRAIN.PCA_STD = 0.1
@@ -413,7 +438,7 @@ _C.RNG_SEED = 1
 _C.LOG_DEST = "stdout"
 
 # Log period in iters
-_C.LOG_PERIOD = 10
+_C.LOG_PERIOD = 100
 
 # Distributed backend
 _C.DIST_BACKEND = "nccl"
@@ -457,31 +482,10 @@ def dump_cfg():
 def load_cfg(cfg_file):
     """Loads config from specified file."""
     with pathmgr.open(cfg_file, "r") as f:
-        cfg_list=_C.load_cfg(f)
-        _C.merge_from_other_cfg(cfg_list)
+        _C.merge_from_other_cfg(_C.load_cfg(f))
 
 
 def reset_cfg():
     """Reset config to initial state."""
     _C.merge_from_other_cfg(_CFG_DEFAULT)
 
-
-def load_cfg_fom_args(description="Config file options."):
-    """Load config from command line arguments and set any specified options."""
-    parser = argparse.ArgumentParser(description=description)
-    help_s = "Config file location"
-    parser.add_argument("--cfg", dest="cfg_file", help=help_s, required=True, type=str)
-    help_s = "See core/config.py for all options"
-    parser.add_argument("opts", help=help_s, default=None, nargs=argparse.REMAINDER)
-    if len(sys.argv) == 1:
-        parser.print_help()
-        sys.exit(1)
-    args = parser.parse_args()
-    load_cfg(args.cfg_file)
-    """
-    cfg = get_cfg()： 获取已经配置好默认参数的cfg
-    cfg.merge_from_file(args.config_file)：config_file是指定的yaml配置文件，
-            通过merge_from_file这个函数会将yaml文件中指定的超参数对默认值进行覆盖。
-    cfg.merge_from_list(args.opts)：merge_from_list作用同上面的类似，只不过是通过命令行的方式覆盖。
-    """
-    _C.merge_from_list(args.opts)

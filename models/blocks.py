@@ -40,9 +40,9 @@ def linear(w_in,w_out,*,bias=False):
     return nn.Linear(w_in,w_out,bias=bias)
 
 def activation():
-    """Helper for building a activation layer."""
-    activation_fun=cfg.MODEL.ACTIVATION_FUN.lower()
-    if activation_fun=="relu":
+    """Helper for building an activation layer."""
+    activation_fun = cfg.MODEL.ACTIVATION_FUN.lower()
+    if activation_fun == "relu":
         return nn.ReLU(inplace=cfg.MODEL.ACTIVATION_INPLACE)
     elif activation_fun=="silu" or activation_fun=="swish":
         try:
@@ -50,13 +50,13 @@ def activation():
         except AttributeError:
             return SiLU()
     else:
-        raise AssertionError("Unknown MODEL.ACTIVATION_FUN"+activation_fun)
+        raise AssertionError("Unknown MODEL.ACTIVATION_FUN: " + activation_fun)
 
 
 # --------------------------- Complexity (cx) calculations --------------------------- #
 
 def conv2d_cx(cx,w_in,w_out,k,*,stride=1,groups=1,bias=False):
-    """Accumulates complexity of conv2d into cx=(h,w,flops,params,acts)."""
+    """Accumulates complexity of conv2d into cx = (h, w, flops, params, acts)."""
     assert k%2==1,"Only odd size kernels supported to avoid padding issues."
     h,w,flops,params,acts=cx["h"],cx["w"],cx["flops"],cx["params"],cx["acts"]
     h,w=(h-1)//stride +1,(w-1)//stride +1

@@ -20,10 +20,10 @@ from torch.utils.data.sampler import RandomSampler
 _DATASETS = {"imagenet": ImageNet}
 
 
-def _construct_loader(dataset,split, batch_size, shuffle, drop_last):
+def _construct_loader(dataset_name, split, batch_size, shuffle, drop_last):
     """Constructs the data loader for the given dataset."""
     # Construct the dataset
-    dataset = _DATASETS["imagenet"](dataset,split)
+    dataset = _DATASETS["imagenet"](dataset_name,split)
     # Create a sampler for multi-process training
     sampler = DistributedSampler(dataset) if len(cfg.GPU_DEVICE_IDS) > 1 else None
     # Create a loader
@@ -42,7 +42,7 @@ def _construct_loader(dataset,split, batch_size, shuffle, drop_last):
 def construct_train_loader():
     """Train loader wrapper."""
     return _construct_loader(
-        dataset=cfg.TRAIN.DATASET,
+        dataset_name=cfg.TRAIN.DATASET,
         split=cfg.TRAIN.SPLIT,
         batch_size=int(cfg.TRAIN.BATCH_SIZE / len(cfg.GPU_DEVICE_IDS)),
         shuffle=True,
@@ -53,7 +53,7 @@ def construct_train_loader():
 def construct_test_loader():
     """Test loader wrapper."""
     return _construct_loader(
-        dataset=cfg.TEST.DATASET,
+        dataset_name=cfg.TEST.DATASET,
         split=cfg.TEST.SPLIT,
         batch_size=int(cfg.TEST.BATCH_SIZE / len(cfg.GPU_DEVICE_IDS)),
         shuffle=False,

@@ -101,6 +101,9 @@ class ImageNet(torch.utils.data.Dataset):
     def __getitem__(self, index):
         # Load the image
         im = cv2.imread(self._imdb[index]["im_path"],cv2.IMREAD_COLOR)
+        # if im is None:
+        #     print(self._imdb[index]["im_path"],'\n')
+        # cv2.imwrite("temp.png",im)
 
         # Prepare the image for training / testing
         im = self._prepare_im(im)

@@ -19,12 +19,12 @@ OPTIM:
   NESTEROV: True
   WEIGHT_DECAY: 0.0005
 TRAIN:
-  DATASET: cifar10
+  DATASET: ./data/cifar10/train.txt
   SPLIT: train
   BATCH_SIZE: 128
   IM_SIZE: 32
 TEST:
-  DATASET: cifar10
+  DATASET: ./data/cifar10/test.txt
   SPLIT: test
   BATCH_SIZE: 200
   IM_SIZE: 32

@@ -1,8 +1,8 @@
 MODEL:
   TYPE: shufflenetv2
-  NUM_CLASSES: 10
+  NUM_CLASSES: 5
   ACTIVATION_FUN: relu
-EN:
+SN:
   STEM_W: 24
   STRIDES: [2,2,2]
   DEPTHS: [4,8,4]
@@ -10,16 +10,16 @@ EN:
   HEAD_W: 1024
 OPTIM:
   LR_POLICY: cos
-  BASE_LR: 0.4
+  BASE_LR: 0.0125
   MAX_EPOCH: 100
   MOMENTUM: 0.9
   WEIGHT_DECAY: 1e-5
 TRAIN:
-  DATASET: ./data/cifar10/train.txt
+  DATASET: ./data/flower_photos/train.txt
   IM_SIZE: 224
   BATCH_SIZE: 1
 TEST:
-  DATASET: ./data/cifar10/test.txt
+  DATASET: ./data/flower_photos/test.txt
   IM_SIZE: 256
   BATCH_SIZE: 1
 GPU_DEVICE_IDS: [0,]

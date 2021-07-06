@@ -26,6 +26,9 @@ import torch.cuda.amp as amp
 from core.config import cfg
 from core.config import pathmgr
 from core.utils import select_device
+import argparse
+import sys 
+import models.scaler as scaler
 
 
 logger = logging.get_logger(__name__)
@@ -242,10 +245,46 @@ def time_model_and_loader():
     benchmark.compute_time_full(model, loss_fun, train_loader, test_loader)
 
 
+def parse_args():
+    """Parse command line options (mode and config)."""
+    parser = argparse.ArgumentParser(description="Run a model.")
+    help_s, choices = "Run mode", ["info", "train", "test", "time", "scale"]
+    parser.add_argument("--mode", help=help_s, choices=choices, required=True, type=str)
+    help_s = "Config file location"
+    parser.add_argument("--cfg", help=help_s, required=True, type=str)
+    help_s = "See pycls/core/config.py for all options"
+    parser.add_argument("opts", help=help_s, default=None, nargs=argparse.REMAINDER)
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit(1)
+    return parser.parse_args()
 
-if __name__ == "__main__":
-    config.load_cfg_fom_args("Train a classification model.")
+def main():
+    """Execute operation (train, test, time, etc.)."""
+    args = parse_args()
+    mode = args.mode
+    config.load_cfg(args.cfg)
+    cfg.merge_from_list(args.opts)
     config.assert_and_infer_cfg()
     cfg.freeze()
-    # dist.multi_proc_run(num_proc=cfg.NUM_GPUS, fun=train_model)    
-    dist.multi_proc_run(num_proc=len(cfg.GPU_DEVICE_IDS), fun=train_model)
+    if mode == "info":
+        print(builders.get_model()())
+        print("complexity:", net.complexity(builders.get_model()))
+    elif mode == "train":
+        dist.multi_proc_run(num_proc=len(cfg.GPU_DEVICE_IDS), fun=train_model)
+    elif mode == "test":
+        dist.multi_proc_run(num_proc=len(cfg.GPU_DEVICE_IDS), fun=test_model)
+    elif mode == "time":
+        dist.multi_proc_run(num_proc=len(cfg.GPU_DEVICE_IDS), fun=time_model)
+    elif mode == "scale":
+        cfg.defrost()
+        cx_orig = net.complexity(builders.get_model())
+        scaler.scale_model()
+        cx_scaled = net.complexity(builders.get_model())
+        cfg_file = config.dump_cfg()
+        print("Scaled config dumped to:", cfg_file)
+        print("Original model complexity:", cx_orig)
+        print("Scaled model complexity:", cx_scaled)
+
+if __name__ == "__main__":
+    main()
